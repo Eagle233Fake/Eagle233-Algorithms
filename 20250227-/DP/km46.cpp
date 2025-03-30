@@ -3,30 +3,39 @@
 using namespace std;
 
 int main(void) {
-    int m, n;
-    cin >> m >> n;
-    
-    int weight[m + 1] = {0};
-    for (int i = 1; i <= m; i++) {
-        cin >> weight[i];
-    }
-    
-    int value[m + 1] = {0};
-    for (int i = 1; i <= m; i++) {
-        cin >> value[i];
-    }
-    
-    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    int M, N;
+    cin >> M >> N;
 
-    for (int i = 1; i < m + 1; i++) {
-        for (int j = 1; j < n + 1; j++) {
-            if (j < weight[i]) {
-                dp[i][j] = dp[i - 1][j];
-            } else {
-                dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);
+    vector<int> w(M);
+    vector<int> v(M);
+
+    for (int i = 0; i < M; i++) {
+        cin >> w[i];
+    }
+    for (int i = 0; i < M; i++) {
+        cin >> v[i];
+    }
+
+    vector<vector<int>> dp(M, vector<int>(N + 1, 0));
+    
+    for (int i = 0; i < M; i++) {
+        dp[i][0] = 0;
+    }
+
+    for (int j = 0; j <= N; j++) {
+        if (w[0] <= j) {
+            dp[0][j] = v[0];
+        }
+    }
+
+    for (int i = 1; i < M; i++) {
+        for (int j = 1; j <= N; j++) {
+            dp[i][j] = dp[i - 1][j];
+            if (j >= w[i]) {
+                dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - w[i]] + v[i]);
             }
         }
     }
-    
-    cout << dp[m][n] << endl;
+
+    cout << dp[M - 1][N] << endl;
 }

@@ -3,25 +3,27 @@
 using namespace std;
 
 int main(void) {
-    int m, n;
-    cin >> m >> n;
-    vector<int> dp(n + 1, 0);
+    int M, N;
+    cin >> M >> N;
 
-    int weight[m + 1] = {0};
-    for (int i = 1; i <= m; i++) {
-        cin >> weight[i];
+    vector<int> w(M);
+    vector<int> v(M);
+
+    for (int i = 0; i < M; i++) {
+        cin >> w[i];
     }
 
-    int value[m + 1] = {0};
-    for (int i = 1; i <= m; i++) {
-        cin >> value[i];
+    for (int i = 0; i < M; i++) {
+        cin >> v[i];
     }
 
-    for (int i = 1; i <= m; i++) {
-        for (int j = n; j >= weight[i]; j--) {
-            dp[j] = max(dp[j], value[i] + dp[j - weight[i]]); // 不用考虑在weight之前的情况，因为已经在上一次的基础上被初始化了
+    vector<int> dp(N + 1, 0);
+
+    for (int i = 0; i < M; i++) {
+        for (int j = N; j >= w[i]; j--) {
+            dp[j] = max(dp[j], dp[j - w[i]] + v[i]);
         }
     }
 
-    cout << dp[n];
+    cout << dp[N] << endl;
 }
