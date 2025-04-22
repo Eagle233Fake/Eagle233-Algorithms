@@ -6,13 +6,12 @@ const int N = 100010;
 
 int q[N];
 
-int quickSort(int q[], int l, int r, int k) {
+void quickSort(int l, int r) {
     if (l >= r) {
-        return q[l];
+        return;
     }
 
-    int i = l - 1;
-    int j = r + 1;
+    int i = l - 1, j = r + 1;
     int mid = q[l + (r - l) / 2];
     while (i < j) {
         do {
@@ -27,21 +26,25 @@ int quickSort(int q[], int l, int r, int k) {
             swap(q[i], q[j]);
         }
     }
-    int lenL = j - l + 1;
-    if (k <= lenL) {
-        return quickSort(q, l, j, k);
-    }
-    return quickSort(q, j + 1, r, k - lenL);
+
+    quickSort(l, j);
+    quickSort(j + 1, r);
 }
 
 int main(void) {
     ios::sync_with_stdio(false);
     cin.tie(0);
-    int n, k;
-    cin >> n >> k;
+    int n;
+    cin >> n;
     for (int i = 0; i < n; i++) {
         cin >> q[i];
     }
 
-    cout << quickSort(q, 0, n - 1, k) << endl;
+    quickSort(0, n - 1);
+
+    for (int i = 0; i < n - 1; i++) {
+        cout << q[i] << ' ';
+    }
+
+    cout << q[n - 1] << endl;
 }
