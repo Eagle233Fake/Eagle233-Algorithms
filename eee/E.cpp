@@ -1,59 +1,71 @@
 #include<bits/stdc++.h>
-
 using namespace std;
 
-vector<int> graph[1000];
-int dist[1000];
+const int MAXN = 10001;
+const int MAXM = 20001;
 
-void shortestPath(int start) {
-	memset(dist, -1, sizeof(dist));
-	queue<int> nodes;
-	nodes.push(start);
-	dist[start] = 0;
+int cnt, money[MAXN];
+bool vis[MAXN];
+struct Edge {
+    int v, next;
+    int len;
+} E[MAXM];
 
-	while (!nodes.empty()) {
-		int cur = nodes.front();
-		nodes.pop();
+int p[MAXN], eid = 1;
 
-		for (int i = 0; i < graph[cur].size(); i++) {
-			int next = graph[cur][i];
+void insert(int u, int v) {
+    E[eid].v = v;
+    E[eid].next = p[u];
+    p[u] = eid++;
+}
 
-			if (dist[next] == -1) {
-				nodes.push(next);
-				dist[next] = dist[cur] + 1;
-			}
-		}
-	}
+int n, m;
+int indegree[MAXN];
+
+void topo() {
+    queue<int> q;
+    for (int i = 1; i <= n; i++) {
+        if (indegree[i] == 0) {
+            q.push(i);
+            vis[i] = true;
+        }
+    }
+    while (!q.empty()) {
+        int now = q.front();
+        q.pop();
+        cnt++;
+        for (int i = p[now]; i; i = E[i].next) {
+            int v = E[i].v;
+            if (--indegree[v] == 0) {
+                q.push(v);
+                vis[v] = true;
+                money[v] = money[now] + 1;
+            }
+        }
+    }
 }
 
 int main() {
-	int N;
-	int maxNode;
-	int maxPath = 0;
-	cin >> N;
+    memset(indegree, 0, sizeof(indegree));
+    memset(money, 0, sizeof(money));
+    cin >> n >> m;
+    for (int i = 1; i <= m; i++) {
+        int u, v;
+        cin >> u >> v;
+        insert(v, u);
+        indegree[u]++;
+    }
 
-	for (int i = 0; i < N - 1; i++) {
-		int a, b;
-		cin >> a >> b;
-		graph[a].push_back(b);
-		graph[b].push_back(a);
-	}
+    topo();
+    int ans = 0;
+    for (int i = 1; i <= n; i++) {
+        if (!vis[i]) {
+            cout << "Unhappy!" << endl;
+            return 0;
+        }
+        ans += money[i];
+    }
 
-	shortestPath(1);
-	for (int i = 1; i <= N; i++) {
-		if (dist[i] > maxPath) {
-			maxPath = dist[i];
-			maxNode = i;
-		}
-	}
-	shortestPath(maxNode);
-	for (int i = 1; i <= N; i++) {
-		if (dist[i] > maxPath) {
-			maxPath = dist[i];
-		}
-	}
-
-	cout << maxPath << endl;
-
-	return 0;
+    cout << ans + n * 100 << endl;
+    return 0;
 }

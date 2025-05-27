@@ -1,84 +1,73 @@
-#include <bits/stdc++.h>
-
+#include<bits/stdc++.h>
+#define ll long long
 using namespace std;
+const int MAXN = 2505;
+struct Edge { int u, v, w; };
+vector<Edge> G;
+int f[MAXN], degree[MAXN], n, m, s, u, v, sum;
+int ff[MAXN];
 
-using i64 = long long;
-typedef long long ll;
+void init(int n) {
+    for (int i = 1; i <= n; ++i) f[i] = i;
+}
 
-const int maxn = 5e4 + 6;
-const int maxm = 5e4 + 6;
+int findf(int i) {
+    return f[i] == i ? f[i] : f[i] = findf(f[i]);
+}
 
-struct edge {
-    int to, len; 
-};
+void merge(int i, int j) {
+    f[findf(i)] = findf(j);
+}
 
-vector<edge> e[maxn]; 
-
-struct node {
-    i64 dis;
-    int num;
-    bool operator>(const node &a) const {
-        return dis > a.dis;
-    }
-};
-
-i64 minDis[maxn];
-bool vis[maxn];
-priority_queue<node, vector<node>, greater<node>> pq;
-
-void dijkstra(int n, int s) {
-    for (int i = 1; i <= n; i++) {
-        minDis[i] = 1e10;
-    }
-    minDis[s] = 0;
-    pq.push({0, s});
-    while (!pq.empty()) {
-        int u = pq.top().num;
-        pq.pop();
-        if (vis[u]) continue;
-        vis[u] = 1;
-        for (edge eg : e[u]) {
-            int v = eg.to;
-            int w = eg.len;
-            if (minDis[v] > minDis[u] + w) {
-                minDis[v] = minDis[u] + w;
-                pq.push({minDis[v], v});
-            }
-        }
-    }
+bool cmp(const Edge &a, const Edge &b) {
+    return a.w < b.w;
 }
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    int n, m, s;
-    cin >> n >> m;
-    vector<int> a(n + 1);
-    for (int i = 1; i <= n; i++) {
-        cin >> a[i];
+    ios::sync_with_stdio(0);
+    cin.tie(0), cout.tie(0);
+    cin >> n >> m >> s;
+    init(n);
+    for (int i = 1; i <= m; ++i) {
+        cin >> u >> v;
+        degree[u]++, degree[v]++;
+        sum += abs(u - v);
+        merge(u, v);
     }
-    s = 1;
-    int u, v, w;
-    while (m--) {
-        cin >> u >> v >> w;
-        e[u].push_back({v, w});
-        e[v].push_back({u, w});
-    }
-    dijkstra(n, s);
-    i64 ans = 0;
-    bool ok = 1;
-    for (int i = 1; i <= n; i++) {
-        if (minDis[i] == 1e10) {
-            ok = 0;
-            break;
+    degree[s]++;
+    for (int i = 1; i <= n; ++i) ff[i] = f[i];
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 1; j <= n; ++j) f[j] = ff[j];
+        degree[i]++;
+        int ans = sum, pre = 0;
+        vector<int> V;
+        for (int j = 1; j <= n; ++j) {
+            if (degree[j]) V.push_back(j);
         }
-        ans += a[i] * minDis[i];
+        for (int j = 1; j <= n; ++j) {
+            if (degree[j] & 1) {
+                if (!pre) pre = j;
+                else {
+                    ans += (j - pre);
+                    for (int k = pre + 1; k <= j; ++k) merge(k, k - 1);
+                    pre = 0;
+                }
+            }
+        }
+        G.clear();
+        for (int j = 0; j + 1 < V.size(); ++j) {
+            if (findf(V[j]) != findf(V[j + 1])) {
+                G.push_back({V[j], V[j + 1], V[j + 1] - V[j]});
+            }
+        }
+        sort(G.begin(), G.end(), cmp);
+        for (const auto &e : G) {
+            if (findf(e.u) != findf(e.v)) {
+                merge(e.u, e.v); ans += 2 * e.w;
+            }
+        }
+        degree[i]--;
+        cout << ans << " ";
     }
-    if (ok)
-        cout << ans << '\n';
-    else
-        cout << "No Answer\n";
-
     return 0;
 }
