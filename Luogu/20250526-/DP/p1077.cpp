@@ -33,10 +33,10 @@ int main(void) {
     dp[0] = 1;
 
     for (int i = 0; i < n; i++) {
-        for (int j = ) {
+        for (int j = m; j >= 0; j--) {
             for (int k = 0; k <= s[i]; k++) {
                 if (j >= k) {
-                    dp[j] = max(dp[j], dp[j - k]);
+                    dp[j] = (dp[j] + dp[j - k]) % mod;
                 }
             }
         }
