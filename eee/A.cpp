@@ -1,64 +1,70 @@
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <limits>
+#include <bits/stdc++.h>
 using namespace std;
+const int MAXN = 1000005;
+int w[MAXN], nextArr[MAXN];
+char s[MAXN], pattern[MAXN];
+int total = 0;
 
-const int INF = numeric_limits<int>::max();
+void computeLPS(const char *pat, int m, int *lps) {
+    int len = 0;
+    lps[0] = 0;
+    int i = 1;
+    while (i < m) {
+        if (pat[i] == pat[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+}
 
-struct Edge {
-    int to;
-    int h;
-};
-
-void dijkstra(int s, int v, const vector<vector<Edge>>& g, vector<int>& mh) {
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
-    pq.push({0, s});
-    mh[s] = 0;
-    
-    while (!pq.empty()) {
-        int u = pq.top().second;
-        int curr_h = pq.top().first;
-        pq.pop();
-        
-        if (curr_h > mh[u]) continue;
-        
-        for (const auto& e : g[u]) {
-            int next_v = e.to;
-            int next_h = e.h;
-            
-            if (mh[next_v] > max(mh[u], next_h)) {
-                mh[next_v] = max(mh[u], next_h);
-                pq.push({mh[next_v], next_v});
+void kmpSearch(const char *text, const char *pat) {
+    int n = strlen(text);
+    int m = strlen(pat);
+    computeLPS(pat, m, nextArr);
+    int i = 0, j = 0;
+    while (i < n) {
+        if (pat[j] == text[i]) {
+            i++;
+            j++;
+        }
+        if (j == m) {
+            total++;
+            j = nextArr[j - 1];
+        } else if (i < n && pat[j] != text[i]) {
+            if (j != 0) {
+                j = nextArr[j - 1];
+            } else {
+                i++;
             }
         }
     }
 }
 
 int main() {
-    int n, m, t;
-    cin >> n >> m >> t;
-    
-    vector<vector<Edge>> g(n + 1);
-    
-    for (int i = 0; i < m; ++i) {
-        int s, e, h;
-        cin >> s >> e >> h;
-        g[s].push_back({e, h});
+    int n, a, b, l, r;
+    cin >> n >> a >> b >> l >> r;
+    cin >> pattern;
+    for (int i = 0; i < n; ++i) {
+        if (i == 0) {
+            w[i] = b;
+        } else {
+            w[i] = (w[i - 1] + a) % n;
+        }
+        if (w[i] >= l && w[i] <= r) {
+            s[i] = (w[i] % 2 == 0) ? 'A' : 'T';
+        } else {
+            s[i] = (w[i] % 2 == 0) ? 'G' : 'C';
+        }
     }
-    
-    while (t--) {
-        int a, b;
-        cin >> a >> b;
-        
-        vector<int> mh(n + 1, INF);
-        
-        dijkstra(a, n, g, mh);
-        
-        int res = mh[b];
-        if (res == INF) cout << "-1" << endl;
-        else cout << res << endl;
-    }
-    
+    kmpSearch(s, pattern);
+    cout << total;
     return 0;
 }

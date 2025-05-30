@@ -1,49 +1,73 @@
 #include <iostream>
-#include <vector>
-#include <climits>
+#include <cstdio>
+#include <cstring>
 
 using namespace std;
 
+#define MAX_N 2333430
+#define MAX_C 26
+
+struct Trie {
+    int *ch[MAX_N];
+    int tot;
+    int cnt[MAX_N];
+
+    Trie() {
+        tot = 0;
+        memset(ch, 0, sizeof(ch));
+        memset(cnt, 0, sizeof(cnt));
+    }
+
+    void insert(const char *str) {
+        int p = 0;
+        for (int i = 0; str[i]; ++i) {
+            if (ch[p] == NULL) {
+                ch[p] = new int[MAX_C];
+                memset(ch[p], -1, sizeof(int) * MAX_C);
+            }
+            if (ch[p][str[i] - 'a'] == -1) {
+                ch[p][str[i] - 'a'] = ++tot;
+            }
+            p = ch[p][str[i] - 'a'];
+        }
+        cnt[p]++;
+    }
+
+    bool find(const char *str) {
+        int p = 0;
+        for (int i = 0; str[i]; ++i) {
+            if (cnt[p] != 0) return true;
+            if (ch[p] == NULL) return false;
+            if (ch[p][str[i] - 'a'] == -1) return false;
+            p = ch[p][str[i] - 'a'];
+        }
+        return false;
+    }
+};
+
+char s[MAX_N][15];
+Trie trie;
+
 int main() {
     int n;
-    cin >> n;
-    vector<vector<int>> adj(n, vector<int>(n));
+    scanf("%d", &n);
+    getchar();
+    bool ans = false;
     for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cin >> adj[i][j];
-        }
+        scanf("%s", s[i]);
+        getchar();
+        trie.insert(s[i]);
     }
-
-    vector<int> lowcost(n);
-    vector<bool> visited(n, false);
     for (int i = 0; i < n; ++i) {
-        lowcost[i] = adj[0][i];
-    }
-    visited[0] = true;
-    int sum = 0;
-
-    for (int cnt = 1; cnt < n; ++cnt) {
-        int min_val = INT_MAX;
-        int min_idx = -1;
-        for (int j = 0; j < n; ++j) {
-            if (!visited[j] && lowcost[j] < min_val) {
-                min_val = lowcost[j];
-                min_idx = j;
-            }
-        }
-        if (min_idx == -1) {
+        if (trie.find(s[i])) {
+            ans = true;
             break;
         }
-        sum += min_val;
-        visited[min_idx] = true;
-        for (int j = 0; j < n; ++j) {
-            if (!visited[j] && adj[min_idx][j] < lowcost[j]) {
-                lowcost[j] = adj[min_idx][j];
-            }
-        }
     }
-
-    cout << sum << endl;
-
+    if (ans) {
+        puts("Bug!");
+    } else {
+        puts("Good Luck!");
+    }
     return 0;
 }

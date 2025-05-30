@@ -1,95 +1,89 @@
-#include <iostream>
-#include <vector>
-#include <cmath>
+#include <bits/stdc++.h>
 using namespace std;
 
-const int MAXN = 10001;
-const int MAXLOG = 15;
+const int ALPHABET_SIZE = 26;
 
-vector<int> adj[MAXN];
-int parent[MAXN];
-int depth[MAXN];
-int ancestor[MAXN][MAXLOG];
-
-void dfs(int node, int par, int dep) {
-    parent[node] = par;
-    depth[node] = dep;
-    for (int i = 0; i < adj[node].size(); ++i) {
-        int child = adj[node][i];
-        if (child != par) {
-            dfs(child, node, dep + 1);
+struct Node {
+    Node *children[ALPHABET_SIZE];
+    Node *fail;
+    int cnt;
+    Node() {
+        for (int i = 0; i < ALPHABET_SIZE; i++) {
+            children[i] = nullptr;
         }
+        fail = nullptr;
+        cnt = 0;
     }
+};
+
+Node *root;
+
+void insert(string word) {
+    Node *p = root;
+    for (char c : word) {
+        int idx = c - 'a';
+        if (p->children[idx] == nullptr) {
+            p->children[idx] = new Node();
+        }
+        p = p->children[idx];
+    }
+    p->cnt++;
 }
 
-void binaryLift(int N) {
-    for (int i = 1; i <= N; ++i) {
-        ancestor[i][0] = parent[i];
+void build() {
+    queue<Node*> q;
+    root->fail = root;
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        if (root->children[i] != nullptr) {
+            root->children[i]->fail = root;
+            q.push(root->children[i]);
+        } else {
+            root->children[i] = root;
+        }
     }
-    
-    for (int j = 1; (1 << j) <= N; ++j) {
-        for (int i = 1; i <= N; ++i) {
-            if (ancestor[i][j - 1] != -1) {
-                ancestor[i][j] = ancestor[ancestor[i][j - 1]][j - 1];
+
+    while (!q.empty()) {
+        Node *u = q.front(); 
+        q.pop();
+        for (int i = 0; i < ALPHABET_SIZE; i++) {
+            if (u->children[i] != nullptr) {
+                Node *v = u->children[i];
+                v->fail = u->fail->children[i];
+                q.push(v);
+            } else {
+                u->children[i] = u->fail->children[i];
             }
         }
     }
 }
 
-int findLCA(int u, int v) {
-    if (depth[u] < depth[v]) swap(u, v);
-    
-    int log;
-    for (log = 1; (1 << log) <= depth[u]; ++log);
-    log--;
-    
-    for (int i = log; i >= 0; --i) {
-        if (depth[u] - (1 << i) >= depth[v]) {
-            u = ancestor[u][i];
+long long query(string article) {
+    long long ans = 0;
+    Node *p = root;
+    for (char c : article) {
+        int idx = c - 'a';
+        p = p->children[idx];
+        Node *temp = p;
+        while (temp != root) {
+            ans += temp->cnt;
+            temp = temp->fail;
         }
     }
-    
-    if (u == v) return u;
-    
-    for (int i = log; i >= 0; --i) {
-        if (ancestor[u][i] != -1 && ancestor[u][i] != ancestor[v][i]) {
-            u = ancestor[u][i];
-            v = ancestor[v][i];
-        }
-    }
-    
-    return parent[u];
+    return ans;
 }
 
 int main() {
-    int N, M, S;
-    cin >> N >> M >> S;
-    
-    for (int i = 1; i <= N; ++i) {
-        adj[i].clear();
-        parent[i] = -1;
-        depth[i] = 0;
-        for (int j = 0; j < MAXLOG; ++j) {
-            ancestor[i][j] = -1;
-        }
+    int n;
+    cin >> n;
+    root = new Node();
+    string word;
+    for (int i = 0; i < n; i++) {
+        cin >> word;
+        insert(word);
     }
-    
-    for (int i = 1; i < N; ++i) {
-        int x, y;
-        cin >> x >> y;
-        adj[x].push_back(y);
-        adj[y].push_back(x);
-    }
-    
-    dfs(S, -1, 0);
-    binaryLift(N);
-    
-    for (int i = 0; i < M; ++i) {
-        int a, b;
-        cin >> a >> b;
-        int lca = findLCA(a, b);
-        cout << lca << endl;
-    }
-    
+    build();
+    string article;
+    cin >> article;
+    cout << query(article) << endl;
     return 0;
 }
