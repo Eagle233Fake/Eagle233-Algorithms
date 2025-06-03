@@ -14,15 +14,10 @@ array is sorted satisfying to the specification
 /*                                                             */
 /***************************************************************/
 #include <bits/stdc++.h>
+using namespace std;
+
 #define M 100
 #define N 100
-
-
-bool cmp(int *a, int *b) {
-    int sumA = 0;
-    int sumB = 0;
-    for (inmt)
-}
 
 //********** Specification of SortLines **********
 void SortLines(int (*p)[M], int n, int m)
@@ -33,7 +28,39 @@ PostCondition:
 array is sorted satisfying to the specification
 */
 {   //TODO: your function definition
-    qsort(p, n, sizeof(p[0]), cmp);
+    int *a[n];
+    for (int i = 0; i < n; i++) {
+        a[i] = p[i];
+    }
+
+    sort(a, a + n, [&](int *a, int *b) {
+        long long sa = 0;
+        long long sb = 0;
+
+        for (int j = 0; j < m; j++) {
+            sa += a[j];
+            sb += b[j];
+        }
+
+        if (sa != sb) {
+            return sa < sb;
+        }
+
+        for (int i = 0; i < m; i++) {
+            if (a[i] != b[i]) {
+                return a[i] < b[i];
+            }
+        }
+        return false;
+    });
+
+    int temp[n][m];
+    for (int i = 0; i < n; i++) {
+        memcpy(temp[i], a[i], sizeof(int) * m);
+    }
+    for (int i = 0; i < n; i++) {
+        memcpy(p[i], temp[i], sizeof(int) * m);
+    }
 }
 /***************************************************************/
 int main()
